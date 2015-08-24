@@ -35,6 +35,9 @@ joined['end_a'] = le.transform(joined['end_a'].values)
 train = joined[joined['id'] == -1]
 test = joined[joined['cost'] == -1]
 
+features = list(train.columns)
+print features
+
 y = train['cost'].apply(lambda x: math.log(x + 1), 1)
 
 X = train.drop(['id', 'spec', 'tube_assembly_id', 'quote_date'], 1)
