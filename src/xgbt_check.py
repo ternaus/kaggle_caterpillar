@@ -9,7 +9,7 @@ from sklearn.cross_validation import ShuffleSplit
 from sklearn.metrics import mean_squared_error
 import math
 
-joined = pd.read_csv('../data/joined_simple.csv')
+joined = pd.read_csv('../data/joined_simple.csv', parse_dates=['quote_date'])
 
 #add flag if ends are of the same type
 
@@ -38,6 +38,15 @@ joined['supplier'] = le.fit_transform(joined['supplier'].values)
 
 #map bracket pricing to Yes=1, No=0
 joined['bracket_pricing'] = joined['bracket_pricing'].map({'Yes': 1, 'No': 0})
+
+
+#add datetime features
+joined['year'] = joined['quote_date'].dt.year
+joined['month'] = joined['quote_date'].dt.month
+joined['dayofyear'] = joined['quote_date'].dt.dayofyear
+joined['dayofweek'] = joined['quote_date'].dt.dayofweek
+joined['day'] = joined['quote_date'].dt.day
+
 
 train = joined[joined['id'] == -1]
 test = joined[joined['cost'] == -1]
@@ -108,16 +117,10 @@ offset = 4000
 
 ind = 1
 if ind == 1:
-  n_iter = 10
-  rs = ShuffleSplit(len(y), n_iter=n_iter, test_size=0.2, random_state=random_state)
+  n_iter = 5
+  rs = ShuffleSplit(len(y), n_iter=n_iter, test_size=0.5, random_state=random_state)
 
   result = []
-  # result_truncated_up = []
-  # result_truncated_down = []
-  result_truncated_both = []
-  # result_truncated_both_round = []
-  # result_truncated_both_int = []
-
 
   for min_child_weight in [3]:
     for eta in [0.1]:
@@ -153,23 +156,23 @@ if ind == 1:
 
                 preds1 = model.predict(xgtest, ntree_limit=model.best_iteration)
 
-                X_train = X_train[::-1, :]
-                labels = y_train[::-1]
+                # X_train = X_train[::-1, :]
+                # labels = y_train[::-1]
+                #
+                # xgtrain = xgb.DMatrix(X_train[offset:, :], label=labels[offset:])
+                # xgval = xgb.DMatrix(X_train[:offset, :], label=labels[:offset])
+                #
+                # watchlist = [(xgtrain, 'train'), (xgval, 'val')]
+                #
+                # model = xgb.train(params_new, xgtrain, num_rounds, watchlist, early_stopping_rounds=120)
+                #
+                # preds2 = model.predict(xgtest, ntree_limit=model.best_iteration)
+                #
+                # # preds = model.predict(xgval, ntree_limit=model.best_iteration)
+                #
+                # preds = 0.5 * preds1 + 0.5 * preds2
 
-                xgtrain = xgb.DMatrix(X_train[offset:, :], label=labels[offset:])
-                xgval = xgb.DMatrix(X_train[:offset, :], label=labels[:offset])
-
-                watchlist = [(xgtrain, 'train'), (xgval, 'val')]
-
-                model = xgb.train(params_new, xgtrain, num_rounds, watchlist, early_stopping_rounds=120)
-
-                preds2 = model.predict(xgtest, ntree_limit=model.best_iteration)
-
-                # preds = model.predict(xgval, ntree_limit=model.best_iteration)
-
-                preds = 0.5 * preds1 + 0.5 * preds2
-
-                tp = mean_squared_error(y_test, preds)
+                tp = mean_squared_error(y_test, preds1)
 
                 score += [tp]
 
