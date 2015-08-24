@@ -1,4 +1,6 @@
 from __future__ import division
+from sklearn.feature_extraction.text import CountVectorizer
+
 __author__ = 'Vladimir Iglovikov'
 
 import pandas as pd
@@ -8,6 +10,8 @@ import xgboost as xgb
 from sklearn.cross_validation import ShuffleSplit
 from sklearn.metrics import mean_squared_error
 import math
+from sklearn.decomposition import TruncatedSVD
+
 
 joined = pd.read_csv('../data/joined_simple.csv', parse_dates=['quote_date'])
 
@@ -48,8 +52,21 @@ joined['dayofweek'] = joined['quote_date'].dt.dayofweek
 joined['day'] = joined['quote_date'].dt.day
 
 
+cv = CountVectorizer()
+
+x = cv.fit_transform(joined['spec'])
+
+svd = TruncatedSVD(n_components=10)
+x = svd.fit_transform(x).toarray()
+
+x = pd.DataFrame(x)
+
+print x.columns
+joined = pd.concat([joined, x], 1)
+
 train = joined[joined['id'] == -1]
 test = joined[joined['cost'] == -1]
+
 
 features = [
   'year',
@@ -94,7 +111,7 @@ features = [
             'forming_a',
             'forming_x',
             # 'spec',
-            '0039', '0038', '0035', '0037', '0036', '0030', '0033', '0014', '0066', '0067', '0064', '0065', '0062', '0063', '0060', '0061', '0068', '0069', '0004', '0049', '0006', '0007', '0001', '0002', '0003', '0040', '0042', '0043', '0044', '0009', '0005', '0047', '0019', '0054', '0071', '0070', '0073', '0072', '0075', '0074', '0077', '0076', '0079', '0078', '0017', '0016', '0059', '0058', '0013', '0012', '0011', '0010', '0053', '0052', '0051', '0050', '0057', '0056', '0055', '0018', '0088', '0084', '0085', '0086', '0087', '0080', '0081', '0082', '0083', '0022', '0023', '0020', '0021', '0026', '0027', '0024', '0025', '0028', '0029', '0046', '0091', '0096', '0094', '0092', '0015',
+            # '0039', '0038', '0035', '0037', '0036', '0030', '0033', '0014', '0066', '0067', '0064', '0065', '0062', '0063', '0060', '0061', '0068', '0069', '0004', '0049', '0006', '0007', '0001', '0002', '0003', '0040', '0042', '0043', '0044', '0009', '0005', '0047', '0019', '0054', '0071', '0070', '0073', '0072', '0075', '0074', '0077', '0076', '0079', '0078', '0017', '0016', '0059', '0058', '0013', '0012', '0011', '0010', '0053', '0052', '0051', '0050', '0057', '0056', '0055', '0018', '0088', '0084', '0085', '0086', '0087', '0080', '0081', '0082', '0083', '0022', '0023', '0020', '0021', '0026', '0027', '0024', '0025', '0028', '0029', '0046', '0091', '0096', '0094', '0092', '0015',
             'end_flag'
             ]
 
@@ -124,11 +141,12 @@ params = {
 num_rounds = 10000
 random_state = 42
 offset = 4000
+test_size = 0.2
 
 ind = 1
 if ind == 1:
   n_iter = 5
-  rs = ShuffleSplit(len(y), n_iter=n_iter, test_size=0.5, random_state=random_state)
+  rs = ShuffleSplit(len(y), n_iter=n_iter, test_size=test_size, random_state=random_state)
 
   result = []
 
