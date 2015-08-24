@@ -100,11 +100,15 @@ features = [
 
 y = train['cost'].apply(lambda x: math.log(x + 1), 1)
 
+
 X = train[features]
+X_test = test[features]
 # print X.info()
 # print X.head9()
 
 X.fillna(-1, inplace=True)
+X_test.fillna(-1, inplace=True)
+
 params = {
   'objective': 'reg:linear',
   # 'objective': 'count:poisson',
@@ -193,54 +197,46 @@ if ind == 1:
   print
   print 'result'
   print result
-#
-# elif ind == 2:
-#   xgtrain = xgb.DMatrix(X.values[offset:, :], label=y.values[offset:])
-#   xgval = xgb.DMatrix(X.values[:offset, :], label=y.values[:offset])
-#   xghold = xgb.DMatrix(X_hold.values)
-#   xgtest = xgb.DMatrix(X_test.values)
-#
-#   watchlist = [(xgtrain, 'train'), (xgval, 'val')]
-#
-#   params = {
-#   # 'objective': 'reg:linear',
-#     'objective': 'count:poisson',
-#   'eta': 0.005,
-#   'min_child_weight': 3,
-#   'subsample': 0.7,
-#   'colsample_bytree': 0.5,
-#   # 'scal_pos_weight': 1,
-#   'silent': 1,
-#   'max_depth': 7,
-#   'gamma': 1
-#   }
-#   params_new = list(params.items())
-#   model1 = xgb.train(params_new, xgtrain, num_rounds, watchlist, early_stopping_rounds=120)
-#   prediction_hold_1 = model1.predict(xghold, ntree_limit=model1.best_iteration)
-#   prediction_test_1 = model1.predict(xgtest, ntree_limit=model1.best_iteration)
-#
-#   X_train = X.values[::-1, :]
-#   labels = y.values[::-1]
-#
-#   xgtrain = xgb.DMatrix(X_train[offset:, :], label=labels[offset:])
-#   xgval = xgb.DMatrix(X_train[:offset, :], label=labels[:offset])
-#
-#   watchlist = [(xgtrain, 'train'), (xgval, 'val')]
-#
-#   model2 = xgb.train(params_new, xgtrain, num_rounds, watchlist, early_stopping_rounds=120)
-#
-#   prediction_hold_2 = model2.predict(xghold, ntree_limit=model2.best_iteration)
-#   prediction_test_2 = model2.predict(xgtest, ntree_limit=model2.best_iteration)
-#
-#   prediction_hold = 0.5 * prediction_hold_1 + 0.5 * prediction_hold_2
-#
-#   submission = pd.DataFrame()
-#   submission['Id'] = hold['Id']
-#   submission['Hazard'] = prediction_hold
-#   submission.to_csv("preds_on_hold/xgbt.csv", index=False)
-#
-#   prediction_test = 0.5 * prediction_test_1 + 0.5 * prediction_test_2
-#   submission = pd.DataFrame()
-#   submission['Id'] = test['Id']
-#   submission['Hazard'] = prediction_test
-#   submission.to_csv("preds_on_test/xgbt.csv", index=False)
+
+elif ind == 2:
+  xgtrain = xgb.DMatrix(X.values[offset:, :], label=y.values[offset:])
+  xgval = xgb.DMatrix(X.values[:offset, :], label=y.values[:offset])
+  xgtest = xgb.DMatrix(X_test.values)
+
+  watchlist = [(xgtrain, 'train'), (xgval, 'val')]
+
+  params = {
+  # 'objective': 'reg:linear',
+    'objective': 'count:poisson',
+  'eta': 0.005,
+  'min_child_weight': 3,
+  'subsample': 0.7,
+  'colsample_bytree': 0.5,
+  # 'scal_pos_weight': 1,
+  'silent': 1,
+  'max_depth': 7,
+  'gamma': 1
+  }
+  params_new = list(params.items())
+  model1 = xgb.train(params_new, xgtrain, num_rounds, watchlist, early_stopping_rounds=120)
+  prediction_test_1 = model1.predict(xgtest, ntree_limit=model1.best_iteration)
+
+  X_train = X.values[::-1, :]
+  labels = y.values[::-1]
+
+  xgtrain = xgb.DMatrix(X_train[offset:, :], label=labels[offset:])
+  xgval = xgb.DMatrix(X_train[:offset, :], label=labels[:offset])
+
+  watchlist = [(xgtrain, 'train'), (xgval, 'val')]
+
+  model2 = xgb.train(params_new, xgtrain, num_rounds, watchlist, early_stopping_rounds=120)
+
+  prediction_test_2 = model2.predict(xgtest, ntree_limit=model2.best_iteration)
+
+
+
+  prediction_test = 0.5 * prediction_test_1 + 0.5 * prediction_test_2
+  submission = pd.DataFrame()
+  submission['Id'] = test['Id']
+  submission['Hazard'] = prediction_test
+  submission.to_csv("predictions/xgbt.csv", index=False)
