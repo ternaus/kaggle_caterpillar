@@ -51,7 +51,13 @@ joined['day'] = joined['quote_date'].dt.day
 train = joined[joined['id'] == -1]
 test = joined[joined['cost'] == -1]
 
-features = ['annual_usage',
+features = [
+  'year',
+  'month',
+  'dayofweek',
+  'dayofyear',
+  'day',
+  'annual_usage',
             'bracket_pricing',
             # 'cost',
             # 'id',
