@@ -42,11 +42,11 @@ joined['supplier'] = le.fit_transform(joined['supplier'].values)
 
 #label encode 'component_id'
 le = LabelEncoder()
-le.fit(np.hstack(['component_id_1',
-                  'component_id_2',
-                  'component_id_3',
-                  'component_id_4',
-                  'component_id_5']))
+le.fit(np.hstack([joined['component_id_1'],
+                  joined['component_id_2'],
+                  joined['component_id_3'],
+                  joined['component_id_4'],
+                  joined['component_id_5']]))
 
 joined['component_id_1'] = le.transform(joined['component_id_1'])
 joined['component_id_2'] = le.transform(joined['component_id_2'])
