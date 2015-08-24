@@ -132,7 +132,7 @@ if ind == 1:
 
   result = []
 
-  for min_child_weight in [3]:
+  for min_child_weight in [5]:
     for eta in [0.1]:
       for colsample_bytree in [0.5]:
         for max_depth in [7]:
@@ -206,8 +206,8 @@ elif ind == 2:
   watchlist = [(xgtrain, 'train'), (xgval, 'val')]
 
   params = {
-  # 'objective': 'reg:linear',
-    'objective': 'count:poisson',
+  'objective': 'reg:linear',
+  #   'objective': 'count:poisson',
   'eta': 0.005,
   'min_child_weight': 3,
   'subsample': 0.7,
@@ -239,4 +239,5 @@ elif ind == 2:
   submission = pd.DataFrame()
   submission['Id'] = test['Id']
   submission['Hazard'] = prediction_test
+  submission['Hazard'] = submission['Hazard'].apply(lambda x: math.exp(x) - 1)
   submission.to_csv("predictions/xgbt.csv", index=False)
