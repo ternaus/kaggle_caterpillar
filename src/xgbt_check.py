@@ -182,7 +182,7 @@ if ind == 1:
                 #
                 # preds = 0.5 * preds1 + 0.5 * preds2
 
-                tp = mean_squared_error(y_test, preds1)
+                tp = math.sqrt(mean_squared_error(y_test, preds1))
 
                 score += [tp]
 

@@ -142,7 +142,7 @@ if ind == 1:
 
               preds = clf.predict(a_test)
 
-              score += [mean_squared_error(b_test, preds)]
+              score += [math.sqrt(mean_squared_error(b_test, preds))]
 
             result += [(np.mean(score), np.std(score), n_estimators, min_samples_split, min_samples_leaf, max_depth, max_features)]
 
