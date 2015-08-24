@@ -237,7 +237,7 @@ elif ind == 2:
 
   prediction_test = 0.5 * prediction_test_1 + 0.5 * prediction_test_2
   submission = pd.DataFrame()
-  submission['Id'] = test['Id']
-  submission['Hazard'] = prediction_test
-  submission['Hazard'] = submission['Hazard'].apply(lambda x: math.exp(x) - 1)
+  submission['id'] = test['id']
+  submission['cost'] = prediction_test
+  submission['cost'] = submission['cost'].apply(lambda x: math.exp(x) - 1)
   submission.to_csv("predictions/xgbt.csv", index=False)
