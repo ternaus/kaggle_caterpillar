@@ -120,6 +120,9 @@ y = train['cost'].apply(lambda x: math.log(x + 1), 1)
 
 X = train[features]
 X_test = test[features]
+
+print X.shape
+print X.columns
 # print X.info()
 # print X.head9()
 
