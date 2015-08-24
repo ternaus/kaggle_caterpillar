@@ -9,7 +9,7 @@ from sklearn.cross_validation import ShuffleSplit
 from sklearn.metrics import mean_squared_error
 import math
 
-joined = pd.read_csv('data/joined_simple.csv')
+joined = pd.read_csv('../data/joined_simple.csv')
 
 #add flag if ends are of the same type
 
