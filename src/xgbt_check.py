@@ -120,7 +120,7 @@ if ind == 1:
 
 
   for min_child_weight in [3]:
-    for eta in [0.01]:
+    for eta in [0.1]:
       for colsample_bytree in [0.5]:
         for max_depth in [7]:
           for subsample in [0.7]:
@@ -134,11 +134,6 @@ if ind == 1:
 
               params_new = list(params.items())
               score = []
-              # score_truncated_up = []
-              # score_truncated_down = []
-              score_truncated_both = []
-              # score_truncated_both_round = []
-              # score_truncated_both_int = []
 
               for train_index, test_index in rs:
 
