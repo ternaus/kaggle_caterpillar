@@ -50,7 +50,7 @@ joined['month'] = joined['quote_date'].dt.month
 joined['dayofyear'] = joined['quote_date'].dt.dayofyear
 joined['dayofweek'] = joined['quote_date'].dt.dayofweek
 joined['day'] = joined['quote_date'].dt.day
-joined['weekday'] = joined['quote_date'].dt.weekday()
+joined['weekday'] = joined['quote_date'].apply(lambda x: x.weekday(), 1)
 
 cv = CountVectorizer()
 
