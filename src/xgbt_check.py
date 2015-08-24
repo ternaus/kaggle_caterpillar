@@ -40,6 +40,20 @@ joined['end_a'] = le.transform(joined['end_a'].values)
 le = LabelEncoder()
 joined['supplier'] = le.fit_transform(joined['supplier'].values)
 
+#label encode 'component_id'
+le = LabelEncoder()
+le.fit(np.hstack(['component_id_1',
+                  'component_id_2',
+                  'component_id_3',
+                  'component_id_4',
+                  'component_id_5']))
+
+joined['component_id_1'] = le.transform(joined['component_id_1'])
+joined['component_id_2'] = le.transform(joined['component_id_2'])
+joined['component_id_3'] = le.transform(joined['component_id_3'])
+joined['component_id_4'] = le.transform(joined['component_id_4'])
+joined['component_id_5'] = le.transform(joined['component_id_5'])
+
 #map bracket pricing to Yes=1, No=0
 joined['bracket_pricing'] = joined['bracket_pricing'].map({'Yes': 1, 'No': 0})
 
@@ -83,15 +97,15 @@ features = [
             # 'quote_date',
             'supplier',
             # 'tube_assembly_id',
-            # 'component_id_1',
+            'component_id_1',
             'quantity_1',
-            # 'component_id_2',
+            'component_id_2',
             'quantity_2',
-            # 'component_id_3',
+            'component_id_3',
             'quantity_3',
-            # 'component_id_4',
+            'component_id_4',
             'quantity_4',
-            # 'component_id_5',
+            'component_id_5',
             'quantity_5',
             # 'material_id',
             'diameter',
