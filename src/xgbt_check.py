@@ -4,7 +4,7 @@ __author__ = 'Vladimir Iglovikov'
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 import numpy as np
-# import xgboost as xgb
+import xgboost as xgb
 from sklearn.cross_validation import ShuffleSplit
 from sklearn.metrics import mean_squared_error
 import math
@@ -104,12 +104,12 @@ params = {
 
 num_rounds = 10000
 random_state = 42
-offset = 5000
+offset = 4000
 
 ind = 1
 if ind == 1:
   n_iter = 10
-  rs = ShuffleSplit(len(y), n_iter=n_iter, test_size=0.1, random_state=random_state)
+  rs = ShuffleSplit(len(y), n_iter=n_iter, test_size=0.2, random_state=random_state)
 
   result = []
   # result_truncated_up = []
