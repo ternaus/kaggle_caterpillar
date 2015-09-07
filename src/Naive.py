@@ -79,7 +79,7 @@ joined = pd.concat([joined, x], 1)
 
 train = joined[joined['id'] == -1]
 test = joined[joined['cost'] == -1]
-
+idx = test.id.values.astype(int)
 
 features = [
   'weekday',
@@ -130,7 +130,7 @@ features = [
 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
             ]
 
-y = np.log1p(train['cost'].values)
+labels = train['cost'].values
 
 X = train[features]
 X_test = test[features]
@@ -143,137 +143,58 @@ print X.columns
 X.fillna(-1, inplace=True)
 X_test.fillna(-1, inplace=True)
 
-params = {
-  'objective': 'reg:linear',
-  # 'objective': 'count:poisson',
-  # 'eta': 0.005,
-  # 'min_child_weight': 6,
-  # 'subsample': 0.7,
-  # 'colsabsample_bytree': 0.7,
-  # 'scal_pos_weight': 1,
-  'silent': 1,
-  # 'max_depth': 9
-}
+train = X.astype(float)
+test = X_test.astype(float)
+label_log = np.log1p(labels)
 
-num_rounds = 20000
-random_state = 42
-offset = 5000
-test_size = 0.2
+params = {}
+params["objective"] = "reg:linear"
+params["eta"] = 0.02
+params["min_child_weight"] = 6
+params["subsample"] = 0.7
+params["colsample_bytree"] = 0.6
+params["scale_pos_weight"] = 0.8
+params["silent"] = 1
+params["max_depth"] = 8
+params["max_delta_step"] = 2
 
-ind = 2
-if ind == 1:
-  n_iter = 5
-  rs = ShuffleSplit(len(y), n_iter=n_iter, test_size=test_size, random_state=random_state)
+plst = list(params.items())
 
-  result = []
+xgtrain = xgb.DMatrix(train, label=label_log)
+xgtest = xgb.DMatrix(test)
 
-  for min_child_weight in [5]:
-    for eta in [0.01]:
-      for colsample_bytree in [0.3, 0.4, 0.6, 0.7]:
-        for max_depth in [8]:
-          for subsample in [1]:
-            for gamma in [1]:
-              params['min_child_weight'] = min_child_weight
-              params['eta'] = eta
-              params['colsample_bytree'] = colsample_bytree
-              params['max_depth'] = max_depth
-              params['subsample'] = subsample
-              params['gamma'] = gamma
-
-              params_new = list(params.items())
-              score = []
-
-              for train_index, test_index in rs:
-
-                X_train = X.values[train_index]
-                X_test = X.values[test_index]
-                y_train = y[train_index]
-                y_test = y[test_index]
-
-                xgtest = xgb.DMatrix(X_test)
-
-                xgtrain = xgb.DMatrix(X_train[offset:, :], label=y_train[offset:])
-                xgval = xgb.DMatrix(X_train[:offset, :], label=y_train[:offset])
-
-                watchlist = [(xgtrain, 'train'), (xgval, 'val')]
-
-                model = xgb.train(params_new, xgtrain, num_rounds, watchlist, early_stopping_rounds=120)
-
-                preds1 = model.predict(xgtest, ntree_limit=model.best_iteration)
-
-                # X_train = X_train[::-1, :]
-                # labels = y_train[::-1]
-                #
-                # xgtrain = xgb.DMatrix(X_train[offset:, :], label=labels[offset:])
-                # xgval = xgb.DMatrix(X_train[:offset, :], label=labels[:offset])
-                #
-                # watchlist = [(xgtrain, 'train'), (xgval, 'val')]
-                #
-                # model = xgb.train(params_new, xgtrain, num_rounds, watchlist, early_stopping_rounds=120)
-                #
-                # preds2 = model.predict(xgtest, ntree_limit=model.best_iteration)
-                #
-                # # preds = model.predict(xgval, ntree_limit=model.best_iteration)
-                #
-                # preds = 0.5 * preds1 + 0.5 * preds2
-
-                tp = math.sqrt(mean_squared_error(y_test, preds1))
-
-                score += [tp]
-
-                print tp
-
-              sc = math.ceil(10000 * np.mean(score)) / 10000
-              sc_std = math.ceil(10000 * np.std(score)) / 10000
-              result += [(sc, sc_std, min_child_weight, eta, colsample_bytree, max_depth, subsample, gamma, n_iter, params['objective'], test_size)]
-
-  result.sort()
-
-  print
-  print 'result'
-  print result
-
-elif ind == 2:
-  xgtrain = xgb.DMatrix(X.values[offset:, :], label=y[offset:])
-  xgval = xgb.DMatrix(X.values[:offset, :], label=y[:offset])
-  xgtest = xgb.DMatrix(X_test.values)
-
-  watchlist = [(xgtrain, 'train'), (xgval, 'val')]
-
-  params = {
-  'objective': 'reg:linear',
-  #   'objective': 'count:poisson',
-  'eta': 0.005,
-  'min_child_weight': 6,
-  'subsample': 0.7,
-  'colsample_bytree': 0.6,
-  'scal_pos_weight': 0.8,
-  'silent': 1,
-  'max_depth': 8,
-   'max_delta_step':2,
-  'gamma': 1
-  }
-  params_new = list(params.items())
-  model1 = xgb.train(params_new, xgtrain, num_rounds, watchlist, early_stopping_rounds=120)
-  prediction_test_1 = model1.predict(xgtest, ntree_limit=model1.best_iteration)
-
-  X_train = X.values[::-1, :]
-  labels = y[::-1]
-
-  xgtrain = xgb.DMatrix(X_train[offset:, :], label=labels[offset:])
-  xgval = xgb.DMatrix(X_train[:offset, :], label=labels[:offset])
-
-  watchlist = [(xgtrain, 'train'), (xgval, 'val')]
-
-  model2 = xgb.train(params_new, xgtrain, num_rounds, watchlist, early_stopping_rounds=120)
-
-  prediction_test_2 = model2.predict(xgtest, ntree_limit=model2.best_iteration)
-
-  prediction_test = 0.5 * prediction_test_1 + 0.5 * prediction_test_2
-  # prediction_test = prediction_test_1
+print('1500')
 
 
-  submission = pd.DataFrame()
-  submission['id'] = test['id']
-  submission['cost'] = np.expm1(prediction_test)
-  submission.to_csv("predictions/xgbt_{timestamp}.csv".format(timestamp=time.time()), index=False)
+num_rounds = 1500
+model = xgb.train(plst, xgtrain, num_rounds)
+preds1 = model.predict(xgtest)
+
+print('3000')
+
+num_rounds = 3000
+model = xgb.train(plst, xgtrain, num_rounds)
+preds2 = model.predict(xgtest)
+
+print('4000')
+
+num_rounds = 4000
+model = xgb.train(plst, xgtrain, num_rounds)
+preds4 = model.predict(xgtest)
+
+label_log = np.power(labels, 1.0/16.0)
+
+xgtrain = xgb.DMatrix(train, label=label_log)
+xgtest = xgb.DMatrix(test)
+
+print('power 1/16 4000')
+
+num_rounds = 4000
+model = xgb.train(plst, xgtrain, num_rounds)
+preds3 = model.predict(xgtest)
+
+preds = 0.4*np.expm1(preds4)+.1*np.expm1(preds1)+0.1*np.expm1(preds2)+0.4*np.power(preds3,16)
+
+
+preds = pd.DataFrame({"id": idx, "cost": preds})
+preds.to_csv('predictions/benchmark.csv', index=False)
